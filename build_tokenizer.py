@@ -22,7 +22,7 @@ tokenizer.pre_tokenizer = Whitespace()
 # instantiate trainer
 trainer = BpeTrainer(
     special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"],
-    vocab_size=15000
+    vocab_size=15000,
     min_frequency=1
 )
 
@@ -32,7 +32,7 @@ files = [
 ]
 
 # train tokenizer
-tokenizer.train(files, trainer)
+tokenizer.train(files=files, trainer=trainer)
 
 # save tokenizer config file
 tokenizer.save("data/tokenizer-wiki.json")
