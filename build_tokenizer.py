@@ -12,34 +12,47 @@ from tokenizers.trainers import BpeTrainer
 from tokenizers import Tokenizer
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import Whitespace
+import argparse
+import os
+import sys
 
-# instantiate tokenizer
-tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
+parser = argparse.ArgumentParser()
+parser.add_argument('--save_dir', "-sd", type=str, default='./save')
+parser.add_argument('--data_dir', "-d", type=str, default='./data')
 
-# splitting our inputs into words
-tokenizer.pre_tokenizer = Whitespace()
+if __name__ == "__main__":
 
-# instantiate trainer
-trainer = BpeTrainer(
-    special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"],
-    vocab_size=15000,
-    min_frequency=1
-)
+    args = parser.parse_args()
+    # print(args)
+    # sys.exit()
+    # instantiate tokenizer
+    tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
 
-# get files
-files = [
-    f"data/wikitext-103-raw/wiki.{split}.raw" for split in ["test", "train", "valid"]
-]
+    # splitting our inputs into words
+    tokenizer.pre_tokenizer = Whitespace()
 
-# train tokenizer
-tokenizer.train(files=files, trainer=trainer)
+    # instantiate trainer
+    trainer = BpeTrainer(
+        special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"],
+        vocab_size=30000,
+        min_frequency=1
+    )
 
-# save tokenizer config file
-tokenizer.save("data/tokenizer-wiki.json")
+    # get files
+    files = [
+        f"{args.data_dir}/wikitext-103-raw/wiki.{split}.raw" for split in ["test", "train", "valid"]
+    ]
 
-# use tokenizer
-tokenizer.save("data/tokenizer-wiki.json")  # load trained tokenizer
-output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
-print(output.tokens)
-print(output.ids)
-print(output.offsets[9])
+    # train tokenizer
+    tokenizer.train(files=files, trainer=trainer)
+
+    # save tokenizer config file
+    tokenizer.save(f"{args.save_dir}/tokenizer-wiki.json")
+
+    # use tokenizer
+    # load trained tokenizer
+    tokenizer.from_file(f"{args.save_dir}/tokenizer-wiki.json")
+    output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
+    print(output.tokens)
+    print(output.ids)
+    print(output.offsets[9])
