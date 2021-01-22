@@ -5,6 +5,9 @@ __pycache__/
 
 data/
 save/
+data/wikitext-103-raw-v1.zip.1
+wikitext-103-raw-v1.zip.1
+data/*.txt
 # C extensions
 *.so
 

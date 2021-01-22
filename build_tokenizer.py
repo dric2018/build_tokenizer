@@ -16,43 +16,55 @@ import argparse
 import os
 import sys
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--save_dir', "-sd", type=str, default='./save')
 parser.add_argument('--data_dir', "-d", type=str, default='./data')
 
+
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    # print(args)
-    # sys.exit()
-    # instantiate tokenizer
-    tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
 
-    # splitting our inputs into words
-    tokenizer.pre_tokenizer = Whitespace()
+    for f in ['ewe-fon', "ewe", "fon"]:
 
-    # instantiate trainer
-    trainer = BpeTrainer(
-        special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"],
-        vocab_size=30000,
-        min_frequency=1
-    )
+        # instantiate tokenizer
+        tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
 
-    # get files
-    files = [
-        f"{args.data_dir}/wikitext-103-raw/wiki.{split}.raw" for split in ["test", "train", "valid"]
-    ]
+        # splitting our inputs into words
+        tokenizer.pre_tokenizer = Whitespace()
 
-    # train tokenizer
-    tokenizer.train(files=files, trainer=trainer)
+        # instantiate trainer
+        trainer = BpeTrainer(
+            special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"],
+            min_frequency=2
+        )
 
-    # save tokenizer config file
-    tokenizer.save(f"{args.save_dir}/tokenizer-wiki.json")
+        # get files
+        files = [
+            os.path.join(args.data_dir, f"{f}-sentences.txt")
+        ]
 
-    # use tokenizer
-    # load trained tokenizer
-    tokenizer.from_file(f"{args.save_dir}/tokenizer-wiki.json")
-    output = tokenizer.encode("Hello, y'all! How are you 😁 ?")
-    print(output.tokens)
-    print(output.ids)
-    print(output.offsets[9])
+        # train tokenizer
+        tokenizer.train(files=files, trainer=trainer)
+
+        # save tokenizer config file
+        tokenizer.save(os.path.join(args.save_dir, f"tokenizer-{f}.json"))
+
+    # load trained tokenizers
+    for f in ['ewe-fon', "ewe", "fon"]:
+        print(f'Using {f} tokenizer : \n')
+        try:
+            tokenizer = Tokenizer.from_file(
+                os.path.join(args.save_dir, f"tokenizer-{f}.json")
+            )
+            output = tokenizer.encode(
+                "Gbadanu tɛgbɛ ɔ, Noah tuun ɖɔ e nɔ cɛ emi"
+            )
+            print(output.tokens)
+            print(output.ids)
+            print(output.offsets[9])
+        except Exception as ex:
+            print(ex)
+
+        print("\n")
